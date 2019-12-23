@@ -111,7 +111,7 @@ public class TransactionManagerTest {
     private TopicPartition tp1 = new TopicPartition(topic, 1);
     private MockTime time = new MockTime();
     private ProducerMetadata metadata = new ProducerMetadata(0, Long.MAX_VALUE, new LogContext(),
-            new ClusterResourceListeners(), time);
+            new ClusterResourceListeners(), time, true);
     private MockClient client = new MockClient(time, metadata);
 
     private ApiVersions apiVersions = new ApiVersions();

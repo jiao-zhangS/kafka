@@ -38,15 +38,18 @@ public class ProducerMetadata extends Metadata {
     private final Map<String, Long> topics = new HashMap<>();
     private final Logger log;
     private final Time time;
+    private final boolean topicExpiryEnabled;
 
     public ProducerMetadata(long refreshBackoffMs,
                             long metadataExpireMs,
                             LogContext logContext,
                             ClusterResourceListeners clusterResourceListeners,
-                            Time time) {
+                            Time time,
+                            boolean topicExpiryEnabled) {
         super(refreshBackoffMs, metadataExpireMs, logContext, clusterResourceListeners);
         this.log = logContext.logger(ProducerMetadata.class);
         this.time = time;
+        this.topicExpiryEnabled = topicExpiryEnabled;
     }
 
     @Override
@@ -75,7 +78,7 @@ public class ProducerMetadata extends Metadata {
         Long expireMs = topics.get(topic);
         if (expireMs == null) {
             return false;
-        } else if (expireMs <= nowMs) {
+        } else if (topicExpiryEnabled && expireMs <= nowMs) {
             log.debug("Removing unused topic {} from the metadata list, expiryMs {} now {}", topic, expireMs, nowMs);
             topics.remove(topic);
             return false;

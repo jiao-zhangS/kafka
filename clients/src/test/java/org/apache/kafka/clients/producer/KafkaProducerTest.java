@@ -485,7 +485,7 @@ public class KafkaProducerTest {
         long metadataExpireMs = 60000L;
         final Time time = new MockTime();
         final ProducerMetadata metadata = new ProducerMetadata(refreshBackoffMs, metadataExpireMs,
-                new LogContext(), new ClusterResourceListeners(), time);
+                new LogContext(), new ClusterResourceListeners(), time, true);
         final String topic = "topic";
         try (KafkaProducer<String, String> producer = new KafkaProducer<>(configs, new StringSerializer(),
                 new StringSerializer(), metadata, new MockClient(time, metadata), null, time)) {
@@ -759,7 +759,7 @@ public class KafkaProducerTest {
         Time time = Time.SYSTEM;
         MetadataResponse initialUpdateResponse = TestUtils.metadataUpdateWith(1, emptyMap());
         ProducerMetadata metadata = new ProducerMetadata(0, Long.MAX_VALUE,
-                new LogContext(), new ClusterResourceListeners(), time);
+                new LogContext(), new ClusterResourceListeners(), time, true);
         metadata.update(initialUpdateResponse, time.milliseconds());
         MockClient client = new MockClient(time, metadata);
 
@@ -899,7 +899,7 @@ public class KafkaProducerTest {
 
     private ProducerMetadata newMetadata(long refreshBackoffMs, long expirationMs) {
         return new ProducerMetadata(refreshBackoffMs, expirationMs,
-                new LogContext(), new ClusterResourceListeners(), Time.SYSTEM);
+                new LogContext(), new ClusterResourceListeners(), Time.SYSTEM, true);
     }
 
 }

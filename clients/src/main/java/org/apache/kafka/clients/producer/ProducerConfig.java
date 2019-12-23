@@ -249,6 +249,13 @@ public class ProducerConfig extends AbstractConfig {
     public static final String SECURITY_PROVIDERS_CONFIG = SecurityConfig.SECURITY_PROVIDERS_CONFIG;
     private static final String SECURITY_PROVIDERS_DOC = SecurityConfig.SECURITY_PROVIDERS_DOC;
 
+    /** <code> metadata.topic.expiry </code> */
+    public static final String METADATA_TOPIC_EXPIRY = "metadata.topic.expiry";
+    public static final String METADATA_TOPIC_EXPIRY_DOC = "This configuration is used to control whether 'topic expiry' is enabled. When set to 'true', topic expiry is enabled. "
+                                                           + "If your producer is used for many various topics, to avoid metadata size grow up indefinitely it's better to set this 'true'. "
+                                                           + "When set to 'false', topic expiry is disabled. It's most suitable for producers that are bounded "
+                                                           + "to a single or few fixed topics, where fetching metadata for the same topics every time is expected.";
+
     static {
         CONFIG = new ConfigDef().define(BOOTSTRAP_SERVERS_CONFIG, Type.LIST, Collections.emptyList(), new ConfigDef.NonNullValidator(), Importance.HIGH, CommonClientConfigs.BOOTSTRAP_SERVERS_DOC)
                                 .define(CLIENT_DNS_LOOKUP_CONFIG,
@@ -372,7 +379,12 @@ public class ProducerConfig extends AbstractConfig {
                                         null,
                                         new ConfigDef.NonEmptyString(),
                                         Importance.LOW,
-                                        TRANSACTIONAL_ID_DOC);
+                                        TRANSACTIONAL_ID_DOC)
+                                .define(METADATA_TOPIC_EXPIRY,
+                                        Type.BOOLEAN,
+                                        true,
+                                        Importance.LOW,
+                                        METADATA_TOPIC_EXPIRY_DOC);
     }
 
     @Override
