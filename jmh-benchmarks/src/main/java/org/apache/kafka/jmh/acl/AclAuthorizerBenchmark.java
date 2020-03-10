@@ -24,10 +24,17 @@ import org.apache.kafka.common.acl.AccessControlEntry;
 import org.apache.kafka.common.acl.AclBindingFilter;
 import org.apache.kafka.common.acl.AclOperation;
 import org.apache.kafka.common.acl.AclPermissionType;
+import org.apache.kafka.common.network.ClientInformation;
+import org.apache.kafka.common.network.ListenerName;
+import org.apache.kafka.common.protocol.ApiKeys;
+import org.apache.kafka.common.requests.RequestContext;
+import org.apache.kafka.common.requests.RequestHeader;
 import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourcePattern;
 import org.apache.kafka.common.resource.ResourceType;
 import org.apache.kafka.common.security.auth.KafkaPrincipal;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
+import org.apache.kafka.server.authorizer.Action;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -45,24 +52,29 @@ import scala.collection.JavaConverters;
 import scala.collection.immutable.TreeMap;
 
 import java.lang.reflect.Field;
+import java.net.InetAddress;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
 @Fork(value = 1)
-@Warmup(iterations = 5)
-@Measurement(iterations = 15)
+@Warmup(iterations = 1)
+@Measurement(iterations = 1)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 
 public class AclAuthorizerBenchmark {
-    @Param({"5000", "10000", "50000"})
+    //@Param({"5000", "10000", "50000"})
+    @Param({"100"})
     private int resourceCount;
     //no. of. rules per resource
-    @Param({"5", "10", "15"})
+    //@Param({"5", "10", "15"})
+    @Param({"1500"})
     private int aclCount;
 
     private AclAuthorizer aclAuthorizer = new AclAuthorizer();
@@ -112,8 +124,15 @@ public class AclAuthorizerBenchmark {
         aclAuthorizer.close();
     }
 
+    //@Benchmark
+    //public void testAclsIterator() { aclAuthorizer.acls(AclBindingFilter.ANY); }
     @Benchmark
-    public void testAclsIterator() {
-        aclAuthorizer.acls(AclBindingFilter.ANY);
+    public void testAuthorizer() throws Exception {
+        ResourcePattern resource = new ResourcePattern(ResourceType.TOPIC, "resource-1", PatternType.LITERAL);
+        List<Action> actions = Collections.singletonList(new Action(AclOperation.WRITE, resource, 1, true, true));
+        RequestHeader header = new RequestHeader(ApiKeys.PRODUCE, new Integer(1).shortValue(), "someclient", 1);
+        RequestContext context = new RequestContext(header, "1", InetAddress.getLocalHost(), KafkaPrincipal.ANONYMOUS,
+                                                    ListenerName.normalised("listener"), SecurityProtocol.PLAINTEXT, ClientInformation.EMPTY);
+        aclAuthorizer.authorize(context, actions);
     }
 }
